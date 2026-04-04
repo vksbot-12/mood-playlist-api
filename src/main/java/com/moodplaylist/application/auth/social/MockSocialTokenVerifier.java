@@ -12,6 +12,6 @@ public class MockSocialTokenVerifier implements SocialTokenVerifier {
     @Override
     public SocialIdentity verify(String idToken, String accessToken) {
         String email = "mock_" + Math.abs(idToken.hashCode()) + "@mood.local";
-        return new SocialIdentity("mock", "uid-" + Math.abs(idToken.hashCode()), email);
+        return new SocialIdentity("uid-" + Math.abs(idToken.hashCode()), email);
     }
 }
