@@ -78,6 +78,31 @@ public class RecommendationService {
         return new CalendarMonthResult(year, month, byDate);
     }
 
+    public DayDetailResult getDayDetail(Long userId, LocalDate date) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to = from.plusDays(1);
+        var logs = moodLogRepository.findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, from, to);
+        if (logs.isEmpty()) {
+            return new DayDetailResult(date.toString(), List.of());
+        }
+
+        List<DayItem> items = logs.stream().map(log -> {
+            var recs = recommendationRepository.findByMoodLogIdOrderByRankNoAsc(log.getId());
+            return new DayItem(
+                    log.getId(),
+                    log.getMoodText(),
+                    log.getMoodSummary(),
+                    log.getCreatedAt().toString(),
+                    recs.stream().map(r -> new PlaylistCandidate(
+                            r.getRankNo(), r.getTitle(), r.getReason(), r.getEmotionLink(),
+                            r.getYoutubeQuery(), r.getYoutubeUrl(), r.isYoutubeMusicSupported()
+                    )).toList()
+            );
+        }).toList();
+
+        return new DayDetailResult(date.toString(), items);
+    }
+
     private List<PlaylistCandidate> generateMockCandidates(String moodText) {
         List<PlaylistCandidate> out = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
@@ -97,4 +122,6 @@ public class RecommendationService {
 
     public record RecommendResult(Long moodLogId, String moodText, List<PlaylistCandidate> candidates, int freeRemaining) {}
     public record CalendarMonthResult(int year, int month, Map<String, Integer> days) {}
+    public record DayDetailResult(String date, List<DayItem> items) {}
+    public record DayItem(Long moodLogId, String moodText, String moodSummary, String createdAt, List<PlaylistCandidate> candidates) {}
 }

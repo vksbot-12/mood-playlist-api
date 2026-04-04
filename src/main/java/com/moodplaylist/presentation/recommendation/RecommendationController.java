@@ -9,6 +9,8 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/v1/recommendations")
 @Validated
@@ -33,6 +35,12 @@ public class RecommendationController {
     ) {
         Long userId = 1L;
         return ApiResponse.ok(recommendationService.getMonth(userId, year, month));
+    }
+
+    @GetMapping("/calendar/day")
+    public ApiResponse<RecommendationService.DayDetailResult> dayDetail(@RequestParam String date) {
+        Long userId = 1L;
+        return ApiResponse.ok(recommendationService.getDayDetail(userId, LocalDate.parse(date)));
     }
 
     public record RecommendRequest(@NotBlank String moodText) {}
