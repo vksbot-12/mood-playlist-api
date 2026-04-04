@@ -1,6 +1,8 @@
 package com.moodplaylist.presentation.auth;
 
 import com.moodplaylist.common.api.ApiResponse;
+import com.moodplaylist.application.auth.service.AuthService;
+import com.moodplaylist.domain.auth.model.TokenPair;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.validation.annotation.Validated;
@@ -12,29 +14,37 @@ import java.util.Map;
 @RequestMapping("/api/v1/auth")
 @Validated
 public class AuthController {
+    private final AuthService authService;
+
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/social/{provider}")
     public ApiResponse<Map<String, String>> socialLogin(
             @PathVariable String provider,
             @Valid @RequestBody SocialLoginRequest request
     ) {
+        TokenPair pair = authService.socialLogin(provider, request.idToken());
         return ApiResponse.ok(Map.of(
                 "provider", provider,
-                "accessToken", "TODO_ACCESS_TOKEN",
-                "refreshToken", "TODO_REFRESH_TOKEN"
+                "accessToken", pair.accessToken(),
+                "refreshToken", pair.refreshToken()
         ));
     }
 
     @PostMapping("/refresh")
     public ApiResponse<Map<String, String>> refresh(@Valid @RequestBody RefreshRequest request) {
+        TokenPair pair = authService.refresh(request.refreshToken());
         return ApiResponse.ok(Map.of(
-                "accessToken", "TODO_NEW_ACCESS_TOKEN",
-                "refreshToken", "TODO_NEW_REFRESH_TOKEN"
+                "accessToken", pair.accessToken(),
+                "refreshToken", pair.refreshToken()
         ));
     }
 
     @PostMapping("/logout")
     public ApiResponse<Map<String, String>> logout(@Valid @RequestBody LogoutRequest request) {
+        authService.logout(request.refreshToken());
         return ApiResponse.ok(Map.of("result", "logged_out"));
     }
 
