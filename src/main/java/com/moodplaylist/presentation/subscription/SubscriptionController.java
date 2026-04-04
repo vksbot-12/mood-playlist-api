@@ -2,6 +2,7 @@ package com.moodplaylist.presentation.subscription;
 
 import com.moodplaylist.application.subscription.service.SubscriptionService;
 import com.moodplaylist.common.api.ApiResponse;
+import com.moodplaylist.presentation.auth.AuthUserResolver;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +18,13 @@ public class SubscriptionController {
 
     @GetMapping("/me")
     public ApiResponse<SubscriptionService.SubscriptionStatus> getMyStatus() {
-        Long userId = 1L;
+        Long userId = AuthUserResolver.currentUserIdOrThrow();
         return ApiResponse.ok(subscriptionService.getStatus(userId));
     }
 
     @PostMapping("/activate-monthly")
     public ApiResponse<SubscriptionService.SubscriptionStatus> activateMonthly(@Valid @RequestBody ActivateRequest request) {
-        Long userId = 1L;
+        Long userId = AuthUserResolver.currentUserIdOrThrow();
         return ApiResponse.ok(subscriptionService.activateMonthly(userId, request.provider()));
     }
 

@@ -25,7 +25,7 @@ public class AuthController {
             @PathVariable String provider,
             @Valid @RequestBody SocialLoginRequest request
     ) {
-        TokenPair pair = authService.socialLogin(provider, request.idToken());
+        TokenPair pair = authService.socialLogin(provider, request.idToken(), request.accessToken());
         return ApiResponse.ok(Map.of(
                 "provider", provider,
                 "accessToken", pair.accessToken(),

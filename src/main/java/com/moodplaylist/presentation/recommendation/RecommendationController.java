@@ -2,6 +2,7 @@ package com.moodplaylist.presentation.recommendation;
 
 import com.moodplaylist.application.recommendation.service.RecommendationService;
 import com.moodplaylist.common.api.ApiResponse;
+import com.moodplaylist.presentation.auth.AuthUserResolver;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -39,7 +40,7 @@ public class RecommendationController {
 
     @GetMapping("/calendar/day")
     public ApiResponse<RecommendationService.DayDetailResult> dayDetail(@RequestParam String date) {
-        Long userId = 1L;
+        Long userId = AuthUserResolver.currentUserIdOrThrow();
         return ApiResponse.ok(recommendationService.getDayDetail(userId, LocalDate.parse(date)));
     }
 

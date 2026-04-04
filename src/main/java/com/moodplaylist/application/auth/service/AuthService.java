@@ -1,5 +1,7 @@
 package com.moodplaylist.application.auth.service;
 
+import com.moodplaylist.application.auth.social.SocialTokenVerifier;
+import com.moodplaylist.application.auth.social.SocialTokenVerifier;
 import com.moodplaylist.domain.auth.model.TokenPair;
 import com.moodplaylist.infrastructure.auth.JwtProvider;
 import com.moodplaylist.infrastructure.persistence.entity.RefreshTokenEntity;
@@ -17,6 +19,8 @@ import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
+import java.util.List;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -24,23 +28,30 @@ public class AuthService {
     private final JpaUserRepository userRepository;
     private final JpaUsageQuotaRepository usageQuotaRepository;
     private final JpaRefreshTokenRepository refreshTokenRepository;
+    private final List<SocialTokenVerifier> socialTokenVerifiers;
 
     public AuthService(
             JwtProvider jwtProvider,
             JpaUserRepository userRepository,
             JpaUsageQuotaRepository usageQuotaRepository,
-            JpaRefreshTokenRepository refreshTokenRepository
+            JpaRefreshTokenRepository refreshTokenRepository,
+            List<SocialTokenVerifier> socialTokenVerifiers
     ) {
         this.jwtProvider = jwtProvider;
         this.userRepository = userRepository;
         this.usageQuotaRepository = usageQuotaRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.socialTokenVerifiers = socialTokenVerifiers;
     }
 
     @Transactional
-    public TokenPair socialLogin(String provider, String idToken) {
-        // MVP: provider 검증 어댑터 연동 전까지 deterministic mock email
-        String email = provider + "_" + Math.abs(idToken.hashCode()) + "@mood.local";
+    public TokenPair socialLogin(String provider, String idToken, String accessToken) {
+        var verifier = socialTokenVerifiers.stream()
+                .filter(v -> v.provider().equalsIgnoreCase(provider))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("unsupported provider"));
+        var social = verifier.verify(idToken, accessToken);
+        String email = social.email();
         UserEntity user = userRepository.findByEmail(email).orElseGet(() -> {
             UserEntity created = new UserEntity();
             created.setEmail(email);
