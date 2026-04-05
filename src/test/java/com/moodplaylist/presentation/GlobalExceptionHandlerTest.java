@@ -3,6 +3,7 @@ package com.moodplaylist.presentation;
 import com.moodplaylist.common.api.ApiResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -41,5 +42,20 @@ class GlobalExceptionHandlerTest {
         assertEquals(false, body.success());
         assertEquals("BAD_REQUEST", body.error().code());
         assertEquals("mood log not found", body.error().message());
+    }
+
+    @Test
+    void typeMismatch_returnsValidationError() {
+        MethodArgumentTypeMismatchException mismatch = new MethodArgumentTypeMismatchException(
+                "not-a-date", java.time.LocalDate.class, "date", null, new IllegalArgumentException("bad type")
+        );
+
+        var response = handler.handleTypeMismatch(mismatch);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ApiResponse<Void> body = response.getBody();
+        assertEquals(false, body.success());
+        assertEquals("VALIDATION_ERROR", body.error().code());
+        assertEquals("invalid request", body.error().message());
     }
 }
