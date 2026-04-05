@@ -120,8 +120,19 @@ public class RecommendationService {
         return out;
     }
 
+    public ShareData getShareData(Long userId, Long moodLogId) {
+        var log = moodLogRepository.findByIdAndUserId(moodLogId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("mood log not found"));
+        var recs = recommendationRepository.findByMoodLogIdOrderByRankNoAsc(moodLogId);
+        String text = recs.stream()
+                .map(r -> r.getRankNo() + ". " + r.getTitle() + " - " + (r.getYoutubeUrl() == null ? "" : r.getYoutubeUrl()))
+                .collect(Collectors.joining("\n"));
+        return new ShareData("오늘의 감정: " + log.getMoodText() + "\n" + text);
+    }
+
     public record RecommendResult(Long moodLogId, String moodText, List<PlaylistCandidate> candidates, int freeRemaining) {}
     public record CalendarMonthResult(int year, int month, Map<String, Integer> days) {}
     public record DayDetailResult(String date, List<DayItem> items) {}
     public record DayItem(Long moodLogId, String moodText, String moodSummary, String createdAt, List<PlaylistCandidate> candidates) {}
+    public record ShareData(String content) {}
 }

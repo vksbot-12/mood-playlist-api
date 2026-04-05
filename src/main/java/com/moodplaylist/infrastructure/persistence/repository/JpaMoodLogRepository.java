@@ -9,4 +9,5 @@ import java.util.List;
 public interface JpaMoodLogRepository extends JpaRepository<MoodLogEntity, Long> {
     List<MoodLogEntity> findByUserIdAndCreatedAtBetween(Long userId, LocalDateTime from, LocalDateTime to);
     List<MoodLogEntity> findByUserIdAndCreatedAtBetweenOrderByCreatedAtDesc(Long userId, LocalDateTime from, LocalDateTime to);
+    java.util.Optional<MoodLogEntity> findByIdAndUserId(Long id, Long userId);
 }

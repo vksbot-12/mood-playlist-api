@@ -44,5 +44,11 @@ public class RecommendationController {
         return ApiResponse.ok(recommendationService.getDayDetail(userId, LocalDate.parse(date)));
     }
 
+    @GetMapping("/{moodLogId}/share")
+    public ApiResponse<RecommendationService.ShareData> shareData(@PathVariable Long moodLogId) {
+        Long userId = AuthUserResolver.currentUserIdOrThrow();
+        return ApiResponse.ok(recommendationService.getShareData(userId, moodLogId));
+    }
+
     public record RecommendRequest(@NotBlank String moodText) {}
 }
