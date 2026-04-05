@@ -98,4 +98,31 @@ class RecommendationControllerTest {
         assertEquals("2026-04-05", response.data().date());
         verify(recommendationService).getDayDetail(7L, date);
     }
+
+    @Test
+    void dayDetail_throwsUnauthorizedWithoutAuthentication() {
+        RecommendationController controller = new RecommendationController(recommendationService);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> controller.dayDetail(LocalDate.of(2026, 4, 5)));
+
+        assertEquals("unauthorized", ex.getMessage());
+    }
+
+    @Test
+    void shareData_usesAuthenticatedUserId() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(new AuthUser(7L), null, List.of())
+        );
+
+        RecommendationService.ShareData shareData = new RecommendationService.ShareData("공유 본문");
+        when(recommendationService.getShareData(7L, 100L)).thenReturn(shareData);
+
+        RecommendationController controller = new RecommendationController(recommendationService);
+        var response = controller.shareData(100L);
+
+        assertEquals(true, response.success());
+        assertEquals("공유 본문", response.data().content());
+        verify(recommendationService).getShareData(7L, 100L);
+    }
 }
