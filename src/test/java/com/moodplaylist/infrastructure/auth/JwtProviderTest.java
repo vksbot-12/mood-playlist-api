@@ -14,7 +14,7 @@ class JwtProviderTest {
         IllegalStateException ex = assertThrows(IllegalStateException.class,
                 () -> new JwtProvider("too-short-secret", "mood-playlist", 900, 1209600));
 
-        assertEquals("JWT_SECRET must be at least 32 bytes for HS256", ex.getMessage());
+        assertEquals("JWT_SECRET must be at least 32 bytes for HS256 (current: 16 bytes)", ex.getMessage());
     }
 
     @Test

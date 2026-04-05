@@ -26,7 +26,9 @@ public class JwtProvider {
     ) {
         byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (secretBytes.length < 32) {
-            throw new IllegalStateException("JWT_SECRET must be at least 32 bytes for HS256");
+            throw new IllegalStateException(
+                    "JWT_SECRET must be at least 32 bytes for HS256 (current: " + secretBytes.length + " bytes)"
+            );
         }
 
         this.key = Keys.hmacShaKeyFor(secretBytes);
