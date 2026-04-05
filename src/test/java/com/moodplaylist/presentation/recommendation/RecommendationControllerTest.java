@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -77,5 +78,24 @@ class RecommendationControllerTest {
         assertEquals(true, response.success());
         assertEquals(1, response.data().days().size());
         verify(recommendationService).getMonth(7L, 2026, 4);
+    }
+
+    @Test
+    void dayDetail_usesAuthenticatedUserIdAndLocalDate() {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(new AuthUser(7L), null, List.of())
+        );
+
+        LocalDate date = LocalDate.of(2026, 4, 5);
+        RecommendationService.DayDetailResult dayResult =
+                new RecommendationService.DayDetailResult("2026-04-05", List.of());
+        when(recommendationService.getDayDetail(7L, date)).thenReturn(dayResult);
+
+        RecommendationController controller = new RecommendationController(recommendationService);
+        var response = controller.dayDetail(date);
+
+        assertEquals(true, response.success());
+        assertEquals("2026-04-05", response.data().date());
+        verify(recommendationService).getDayDetail(7L, date);
     }
 }

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,9 +39,11 @@ public class RecommendationController {
     }
 
     @GetMapping("/calendar/day")
-    public ApiResponse<RecommendationService.DayDetailResult> dayDetail(@RequestParam String date) {
+    public ApiResponse<RecommendationService.DayDetailResult> dayDetail(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
         Long userId = AuthUserResolver.currentUserIdOrThrow();
-        return ApiResponse.ok(recommendationService.getDayDetail(userId, LocalDate.parse(date)));
+        return ApiResponse.ok(recommendationService.getDayDetail(userId, date));
     }
 
     @GetMapping("/{moodLogId}/share")
