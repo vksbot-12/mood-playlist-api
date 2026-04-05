@@ -24,8 +24,7 @@ public class RecommendationController {
 
     @PostMapping
     public ApiResponse<RecommendationService.RecommendResult> recommend(@Valid @RequestBody RecommendRequest request) {
-        // TODO: JWT 인증 완료 후 SecurityContext에서 userId 추출
-        Long userId = 1L;
+        Long userId = AuthUserResolver.currentUserIdOrThrow();
         return ApiResponse.ok(recommendationService.recommend(userId, request.moodText()));
     }
 
@@ -34,7 +33,7 @@ public class RecommendationController {
             @RequestParam @Min(2020) int year,
             @RequestParam @Min(1) @Max(12) int month
     ) {
-        Long userId = 1L;
+        Long userId = AuthUserResolver.currentUserIdOrThrow();
         return ApiResponse.ok(recommendationService.getMonth(userId, year, month));
     }
 
