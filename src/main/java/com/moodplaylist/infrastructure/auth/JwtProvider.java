@@ -24,7 +24,12 @@ public class JwtProvider {
             @Value("${security.jwt.access-token-ttl-seconds}") long accessTtlSeconds,
             @Value("${security.jwt.refresh-token-ttl-seconds}") long refreshTtlSeconds
     ) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 bytes for HS256");
+        }
+
+        this.key = Keys.hmacShaKeyFor(secretBytes);
         this.issuer = issuer;
         this.accessTtlSeconds = accessTtlSeconds;
         this.refreshTtlSeconds = refreshTtlSeconds;

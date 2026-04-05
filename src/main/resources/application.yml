@@ -22,7 +22,7 @@ security:
     issuer: ${JWT_ISSUER:mood-playlist}
     access-token-ttl-seconds: ${JWT_ACCESS_TTL:900}
     refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:1209600}
-    secret: ${JWT_SECRET:change-me}
+    secret: ${JWT_SECRET:change-me-change-me-change-me-1234567890}
 
 external:
   codex:
