@@ -6,6 +6,7 @@ import com.moodplaylist.infrastructure.persistence.entity.PlaylistRecommendation
 import com.moodplaylist.infrastructure.persistence.entity.UsageQuotaEntity;
 import com.moodplaylist.infrastructure.persistence.repository.JpaMoodLogRepository;
 import com.moodplaylist.infrastructure.persistence.repository.JpaPlaylistRecommendationRepository;
+import com.moodplaylist.infrastructure.persistence.repository.JpaSubscriptionRepository;
 import com.moodplaylist.infrastructure.persistence.repository.JpaUsageQuotaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,18 @@ public class RecommendationService {
     private final JpaUsageQuotaRepository usageQuotaRepository;
     private final JpaMoodLogRepository moodLogRepository;
     private final JpaPlaylistRecommendationRepository recommendationRepository;
+    private final JpaSubscriptionRepository subscriptionRepository;
 
     public RecommendationService(
             JpaUsageQuotaRepository usageQuotaRepository,
             JpaMoodLogRepository moodLogRepository,
-            JpaPlaylistRecommendationRepository recommendationRepository
+            JpaPlaylistRecommendationRepository recommendationRepository,
+            JpaSubscriptionRepository subscriptionRepository
     ) {
         this.usageQuotaRepository = usageQuotaRepository;
         this.moodLogRepository = moodLogRepository;
         this.recommendationRepository = recommendationRepository;
+        this.subscriptionRepository = subscriptionRepository;
     }
 
     @Transactional
@@ -38,7 +42,11 @@ public class RecommendationService {
         UsageQuotaEntity quota = usageQuotaRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("quota not found"));
 
-        if (quota.getFreeRemaining() <= 0) {
+        boolean subscribed = subscriptionRepository.findByUserId(userId)
+                .map(s -> "ACTIVE".equalsIgnoreCase(s.getStatus()) && (s.getExpiresAt() == null || s.getExpiresAt().isAfter(LocalDateTime.now())))
+                .orElse(false);
+
+        if (quota.getFreeRemaining() <= 0 && !subscribed) {
             throw new IllegalStateException("quota exhausted");
         }
 
@@ -63,8 +71,10 @@ public class RecommendationService {
             recommendationRepository.save(entity);
         }
 
-        quota.setFreeRemaining(quota.getFreeRemaining() - 1);
-        usageQuotaRepository.save(quota);
+        if (!subscribed) {
+            quota.setFreeRemaining(quota.getFreeRemaining() - 1);
+            usageQuotaRepository.save(quota);
+        }
 
         return new RecommendResult(saved.getId(), moodText, candidates, quota.getFreeRemaining());
     }
