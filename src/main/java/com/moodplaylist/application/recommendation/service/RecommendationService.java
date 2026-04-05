@@ -39,6 +39,10 @@ public class RecommendationService {
 
     @Transactional
     public RecommendResult recommend(Long userId, String moodText) {
+        if (moodText == null || moodText.isBlank()) {
+            throw new IllegalArgumentException("mood text required");
+        }
+
         UsageQuotaEntity quota = usageQuotaRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("quota not found"));
 

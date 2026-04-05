@@ -100,4 +100,14 @@ class RecommendationServiceTest {
         verify(moodLogRepository, never()).save(any());
         verify(recommendationRepository, never()).save(any());
     }
+
+    @Test
+    void recommend_throwsWhenMoodTextBlank() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> recommendationService.recommend(1L, "   "));
+
+        assertEquals("mood text required", ex.getMessage());
+        verify(usageQuotaRepository, never()).findByUserId(any());
+        verify(moodLogRepository, never()).save(any());
+    }
 }
