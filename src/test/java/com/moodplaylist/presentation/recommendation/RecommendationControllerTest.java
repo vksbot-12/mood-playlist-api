@@ -125,4 +125,13 @@ class RecommendationControllerTest {
         assertEquals("공유 본문", response.data().content());
         verify(recommendationService).getShareData(7L, 100L);
     }
+
+    @Test
+    void shareData_throwsUnauthorizedWithoutAuthentication() {
+        RecommendationController controller = new RecommendationController(recommendationService);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> controller.shareData(100L));
+
+        assertEquals("unauthorized", ex.getMessage());
+    }
 }
