@@ -110,4 +110,22 @@ class RecommendationServiceTest {
         verify(usageQuotaRepository, never()).findByUserId(any());
         verify(moodLogRepository, never()).save(any());
     }
+
+    @Test
+    void getMonth_throwsWhenYearOutOfRange() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> recommendationService.getMonth(1L, 2019, 4));
+
+        assertEquals("year out of range", ex.getMessage());
+        verify(moodLogRepository, never()).findByUserIdAndCreatedAtBetween(any(), any(), any());
+    }
+
+    @Test
+    void getMonth_throwsWhenMonthOutOfRange() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> recommendationService.getMonth(1L, 2026, 13));
+
+        assertEquals("month out of range", ex.getMessage());
+        verify(moodLogRepository, never()).findByUserIdAndCreatedAtBetween(any(), any(), any());
+    }
 }

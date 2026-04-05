@@ -84,6 +84,13 @@ public class RecommendationService {
     }
 
     public CalendarMonthResult getMonth(Long userId, int year, int month) {
+        if (year < 2020) {
+            throw new IllegalArgumentException("year out of range");
+        }
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("month out of range");
+        }
+
         LocalDateTime from = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime to = from.plusMonths(1);
         var logs = moodLogRepository.findByUserIdAndCreatedAtBetween(userId, from, to);
